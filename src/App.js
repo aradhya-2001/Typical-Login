@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import Login from './components/Login/Login';
 import Home from './components/Home/Home';
@@ -7,13 +7,21 @@ import MainHeader from './components/MainHeader/MainHeader';
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("isLoggedIn")
+
+    if(isLoggedIn === '1'){
+      setIsLoggedIn(true)
+    }
+  }, [])  /* 1st time the app runs, at last, code inside useEffect func is ran and the dependencies is noted down (here an empty array). Afterwards when the app runs, code inside the func will not run coz the dependencies has'nt changed i.e. it is still an empty array. */
+
   const loginHandler = (email, password) => {
-    // We should of course check email and password
-    // But it's just a dummy/ demo anyways
+    localStorage.setItem("isLoggedIn", "1") // key value pair. Variable isLoggedIn = '1'
     setIsLoggedIn(true);
   };
 
   const logoutHandler = () => {
+    localStorage.removeItem("isLoggedIn")
     setIsLoggedIn(false);
   };
 

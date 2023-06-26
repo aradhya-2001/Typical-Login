@@ -1,43 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import Card from '../UI/Card/Card';
 import classes from './Login.module.css';
 import Button from '../UI/Button/Button';
 
 const Login = (props) => {
-  const [enteredEmail, setEnteredEmail] = useState('');
+  const [email, setEmail] = useState('');
   const [emailIsValid, setEmailIsValid] = useState();
-  const [enteredPassword, setEnteredPassword] = useState('');
+  const [password, setPassword] = useState('');
   const [passwordIsValid, setPasswordIsValid] = useState();
   const [formIsValid, setFormIsValid] = useState(false);
 
-  const emailChangeHandler = (event) => {
-    setEnteredEmail(event.target.value);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFormIsValid(
+        email.includes('@') && password.trim().length > 6
+      );  
+    }, 300);
+    
+    return (() => {  // This is a clean up func. It runs before the code inside useEffect func is executed except the 1st time i.e. when the app renders 1st time, only the setTimeout func will run but afterwards when either (or both) of the dependencies changes, 1st the cleap up func runs then setTimeout func. This is coz after every key stroke, a new setTimeout func is added to the callback queue. But clean up func before adding a new setTimeout func to the callback queue, dels the prev one. Clean up func also runs whenever the component it is defined in is unmounted from the DOM like when we click on login button, Login component is removed from DOM so clean up func runs. 
+      console.log("clean up!")
+      clearTimeout(timer)
+    })
+  }, [email, password])
 
-    setFormIsValid(
-      event.target.value.includes('@') && enteredPassword.trim().length > 6
-    );
+  const emailChangeHandler = (event) => {  
+    setEmail(event.target.value);
+    /* setFormIsValid(
+      event.target.value.includes('@') && enteredPassword.trim().length > 6  // here we are using event.target.value instead of enteredEmail coz in the curr func i.e. emailChangeHandler we are updating the value of enteredEmail state which will reflect the change after some time (outside the func).
+    );  */
   };
 
   const passwordChangeHandler = (event) => {
-    setEnteredPassword(event.target.value);
-
-    setFormIsValid(
-      event.target.value.trim().length > 6 && enteredEmail.includes('@')
-    );
+    setPassword(event.target.value);
+    /* setFormIsValid(
+     event.target.value.trim().length > 6 && enteredPassword.includes('@') 
+    ); */ 
   };
 
-  const validateEmailHandler = () => {
-    setEmailIsValid(enteredEmail.includes('@'));
+  const emailBlurHandler = () => {
+    setEmailIsValid(email.includes('@'));
   };
 
-  const validatePasswordHandler = () => {
-    setPasswordIsValid(enteredPassword.trim().length > 6);
+  const passwordBlurHandler = () => {
+    setPasswordIsValid(password.trim().length > 6);
   };
 
   const submitHandler = (event) => {
     event.preventDefault();
-    props.onLogin(enteredEmail, enteredPassword);
+    props.onLogin(email, password);
   };
 
   return (
@@ -52,9 +63,9 @@ const Login = (props) => {
           <input
             type="email"
             id="email"
-            value={enteredEmail}
+            value={email}
             onChange={emailChangeHandler}
-            onBlur={validateEmailHandler}
+            onBlur={emailBlurHandler}
           />
         </div>
         <div
@@ -66,9 +77,9 @@ const Login = (props) => {
           <input
             type="password"
             id="password"
-            value={enteredPassword}
+            value={password}
             onChange={passwordChangeHandler}
-            onBlur={validatePasswordHandler} // when we click somewhere out of the input field, validatePswordHandler func will run
+            onBlur={passwordBlurHandler} // when we click somewhere out of the input field, validatePswordHandler func will run
           />
         </div>
         <div className={classes.actions}>
