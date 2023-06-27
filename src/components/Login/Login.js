@@ -1,17 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useReducer } from 'react';
 
 import Card from '../UI/Card/Card';
 import classes from './Login.module.css';
 import Button from '../UI/Button/Button';
 
+const emailReducer = (emailState, action) => {
+  if(action.type === "INPUT"){
+    return {value: action.val, isValid: action.val.includes('@')} // emailState is the current email state and it is an object having 2 items -> value and isValid. In this if statement, these items are populated and returned to email variable and to emailState. 
+  } else if(action.type === "BLUR"){
+    return {value: emailState.value, isValid: emailState.isValid} // when we are typing in input field, dispatchEmail func triggers emailReducer func on every key stroke. Then emailReducer updates the emailState accordingly. Then when we click outside input, emailReducer func is called by dispatcher and React puts the latest state of email to its parameter emailState and else if is triggered which doesn't update state just returns the current one.
+  } 
+  return {value: "", isValid: false}
+}
+
+const passwordReducer = (state, action) => {
+  if(action.type === "INPUT") {
+    return {value: action.val, isValid: action.val.length > 6}
+  } else if(action.type === "BLUR") {
+    return {value:state.value, isValid: state.isValid}
+  }
+  return {value: "", isValid: false}
+}
+
 const Login = (props) => {
-  const [email, setEmail] = useState('');
-  const [emailIsValid, setEmailIsValid] = useState();
-  const [password, setPassword] = useState('');
-  const [passwordIsValid, setPasswordIsValid] = useState();
+  const [email, dispatchEmail] = useReducer(emailReducer, {value: "", isValid: null}) // the initial state's isValid is set to null coz if its set to false then on page load up field will be coloured red.
+  const [password, dispatchPassword] = useReducer(passwordReducer, {value: "", isValid: null})
+  /* const [email, setEmail] = useState('');
+  const [emailIsValid, setEmailIsValid] = useState(); */
+  /* const [password, setPassword] = useState('');
+  const [passwordIsValid, setPasswordIsValid] = useState(); */
   const [formIsValid, setFormIsValid] = useState(false);
 
-  useEffect(() => {
+  /* useEffect(() => {
     const timer = setTimeout(() => {
       setFormIsValid(
         email.includes('@') && password.trim().length > 6
@@ -22,62 +42,56 @@ const Login = (props) => {
       console.log("clean up!")
       clearTimeout(timer)
     })
-  }, [email, password])
+  }, [email, password]) */
 
   const emailChangeHandler = (event) => {  
-    setEmail(event.target.value);
-    /* setFormIsValid(
-      event.target.value.includes('@') && enteredPassword.trim().length > 6  // here we are using event.target.value instead of enteredEmail coz in the curr func i.e. emailChangeHandler we are updating the value of enteredEmail state which will reflect the change after some time (outside the func).
-    );  */
+    dispatchEmail({type: "INPUT", val: event.target.value}); // Here we are sending the action onject {type: "USER_INPUT", val: event.target.value} to emailReducer func. 
+    setFormIsValid(
+      email.isValid && password.isValid 
+    ); 
   };
 
   const passwordChangeHandler = (event) => {
-    setPassword(event.target.value);
-    /* setFormIsValid(
-     event.target.value.trim().length > 6 && enteredPassword.includes('@') 
-    ); */ 
+    dispatchPassword({type: "INPUT", val: event.target.value});
+    setFormIsValid(
+     password.isValid && email.isValid
+    ); 
   };
 
   const emailBlurHandler = () => {
-    setEmailIsValid(email.includes('@'));
+    dispatchEmail({type: "BLUR"}) // here the action object that is being sent to emailReducer func has only 1 item i.e. type. So inside else if of emailReducer func there is only action.type
   };
 
   const passwordBlurHandler = () => {
-    setPasswordIsValid(password.trim().length > 6);
+    dispatchPassword({type: "BLUR"});
   };
 
   const submitHandler = (event) => {
     event.preventDefault();
-    props.onLogin(email, password);
+    props.onLogin(email.value, password.value);
   };
 
   return (
     <Card className={classes.login}>
       <form onSubmit={submitHandler}>
-        <div
-          className={`${classes.control} ${
-            emailIsValid === false ? classes.invalid : ''
-          }`}
+        <div className={`${classes.control} ${email.isValid === false ? classes.invalid : ''}`}
         >
           <label htmlFor="email">E-Mail</label>
           <input
             type="email"
             id="email"
-            value={email}
+            value={email.value}
             onChange={emailChangeHandler}
             onBlur={emailBlurHandler}
           />
         </div>
-        <div
-          className={`${classes.control} ${
-            passwordIsValid === false ? classes.invalid : ''
-          }`}
+        <div className={`${classes.control} ${password.isValid === false ? classes.invalid : ''}`}
         >
           <label htmlFor="password">Password</label>
           <input
             type="password"
             id="password"
-            value={password}
+            value={password.value}
             onChange={passwordChangeHandler}
             onBlur={passwordBlurHandler} // when we click somewhere out of the input field, validatePswordHandler func will run
           />
