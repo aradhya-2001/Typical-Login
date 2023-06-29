@@ -1,10 +1,10 @@
-import React, { useReducer } from "react";
+import React, { useReducer, useEffect, useState } from "react";
 
 import Card from "../UI/Card/Card";
 import classes from "./Login.module.css";
 import Button from "../UI/Button/Button";
 
-/* const emailReducer = (emailState, action) => {
+const emailReducer = (emailState, action) => {
   if (action.type === "INPUT") {
     return { value: action.val, isValid: action.val.includes("@") }; // emailState is the current email state and has been set as an object having 2 items -> value and isValid. In this if statement, these items are populated and returned to email variable and to emailState.
   } else if (action.type === "BLUR") {
@@ -20,9 +20,9 @@ const passwordReducer = (state, action) => {
     return { value: state.value, isValid: state.isValid };
   }
   return { value: "", isValid: false };
-}; */
+};
 
-const formReducer = (state, action) => {
+/* const formReducer = (state, action) => {
   if (action.type === "EMAIL_INPUT") {
     return {
       email: { value: action.val, isValid: action.val.includes("@") },
@@ -54,26 +54,28 @@ const formReducer = (state, action) => {
     password: { value: "", isValid: false },
     formIsValid: false,
   };
-};
+}; */
 
-const Login = (props) => {
-  /* const [email, dispatchEmail] = useReducer(emailReducer, {value: "",isValid: null}); // the initial state's isValid is set to null coz if its set to false then on page load up field will be coloured red.
-  const [password, dispatchPassword] = useReducer(passwordReducer, {value: "",isValid: null}); */
-  const [form, dispatchForm] = useReducer(formReducer, {
+const Login = (props) => 
+{
+  const [email, dispatchEmail] = useReducer(emailReducer, {value: "",isValid: null}); // the initial state's isValid is set to null coz if its set to false then on page load up field will be coloured red.
+  const [password, dispatchPassword] = useReducer(passwordReducer, {value: "",isValid: null});
+  /* const [form, dispatchForm] = useReducer(formReducer, {
     email: { value: "", isValid: null },
     password: { value: "", isValid: null },
     formIsValid: null,
-  });
+  }); */
   /* const [email, setEmail] = useState('');
   const [emailIsValid, setEmailIsValid] = useState(); 
    const [password, setPassword] = useState('');
-  const [passwordIsValid, setPasswordIsValid] = useState(); 
-   const [formIsValid, setFormIsValid] = useState(false); */
-
-  /* useEffect(() => {
+  const [passwordIsValid, setPasswordIsValid] = useState(); */
+   const [formIsValid, setFormIsValid] = useState(false); 
+ 
+  useEffect(() => {
     const timer = setTimeout(() => {
+      console.log("checking validity")
       setFormIsValid(
-        email.includes('@') && password.trim().length > 6
+        email.isValid && password.isValid
       );  
     }, 300);
     
@@ -81,35 +83,35 @@ const Login = (props) => {
       console.log("clean up!")
       clearTimeout(timer)
     })
-  }, [email, password]) */
+  }, [email.isValid, password.isValid]) /* earlier this was running for every key strokes. After the form is valid we dont need to check further */
 
   const emailChangeHandler = (event) => {
-   /*  dispatchEmail({type: "INPUT", val: event.target.value}); // Here we are sending the action onject {type: "USER_INPUT", val: event.target.value} to emailReducer func. 
-    setFormIsValid(
+     dispatchEmail({type: "INPUT", val: event.target.value}); // Here we are sending the action onject {type: "USER_INPUT", val: event.target.value} to emailReducer func. 
+   /* setFormIsValid(
       email.isValid && password.isValid 
     ); */
-    dispatchForm({ type: "EMAIL_INPUT", val: event.target.value }); // Here we are sending the action onject {type: "USER_INPUT", val: event.target.value} to emailReducer func.
-  };
+   /*  dispatchForm({ type: "EMAIL_INPUT", val: event.target.value }); // Here we are sending the action onject {type: "USER_INPUT", val: event.target.value} to emailReducer func.*/
+  }; 
 
   const passwordChangeHandler = (event) => {
-    /* dispatchPassword({type: "INPUT", val: event.target.value});
-    setFormIsValid(
+     dispatchPassword({type: "INPUT", val: event.target.value});
+   /* setFormIsValid(
      password.isValid && email.isValid
     ); */
-    dispatchForm({ type: "PASSWORD_INPUT", val: event.target.value });
+    /* dispatchForm({ type: "PASSWORD_INPUT", val: event.target.value }); */
   };
 
   const emailBlurHandler = () => {
-    dispatchForm({ type: "BLUR" }); // here the action object that is being sent to Reducer func has only 1 item i.e. type. So inside else if of Reducer func there is only action.type
+    dispatchEmail({ type: "BLUR" }); // here the action object that is being sent to Reducer func has only 1 item i.e. type. So inside else if of Reducer func there is only action.type
   };
 
   const passwordBlurHandler = () => {
-    dispatchForm({ type: "BLUR" });
+    dispatchPassword({ type: "BLUR" });
   };
 
   const submitHandler = (event) => {
     event.preventDefault();
-    props.onLogin(form.email.value, form.password.value);
+    props.onLogin(email.value, password.value);
   };
 
   return (
@@ -117,40 +119,40 @@ const Login = (props) => {
       <form onSubmit={submitHandler}>
         <div
           className={`${classes.control} ${
-            form.email.isValid === false ? classes.invalid : ""
+            email.isValid === false ? classes.invalid : ""
           }`}
         >
           <label htmlFor="email">E-Mail</label>
           <input
             type="email"
             id="email"
-            value={form.email.value}
+            value={email.value}
             onChange={emailChangeHandler}
             onBlur={emailBlurHandler}
           />
         </div>
         <div
           className={`${classes.control} ${
-            form.password.isValid === false ? classes.invalid : ""
+            password.isValid === false ? classes.invalid : ""
           }`}
         >
           <label htmlFor="password">Password</label>
           <input
             type="password"
             id="password"
-            value={form.password.value}
+            value={password.value}
             onChange={passwordChangeHandler}
             onBlur={passwordBlurHandler} // when we click somewhere out of the input field, validatePswordHandler func will run
           />
         </div>
         <div className={classes.actions}>
-          <Button type="submit" className={classes.btn} disabled={!form.formIsValid}>
+          <Button type="submit" className={classes.btn} disabled={!formIsValid}>
             Login
           </Button>
         </div>
       </form>
     </Card>
   );
-};
-
+  
+} 
 export default Login;
