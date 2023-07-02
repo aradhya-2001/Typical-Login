@@ -1,8 +1,9 @@
-import React, { useReducer, useEffect, useState } from "react";
+import React, { useReducer, useEffect, useState, useContext } from "react";
 
 import Card from "../UI/Card/Card";
 import classes from "./Login.module.css";
 import Button from "../UI/Button/Button";
+import AuthContext from "../../store/auth-context";
 
 const emailReducer = (emailState, action) => {
   if (action.type === "INPUT") {
@@ -56,7 +57,7 @@ const passwordReducer = (state, action) => {
   };
 }; */
 
-const Login = (props) => 
+const Login = () => 
 {
   const [email, dispatchEmail] = useReducer(emailReducer, {value: "",isValid: null}); // the initial state's isValid is set to null coz if its set to false then on page load up field will be coloured red.
   const [password, dispatchPassword] = useReducer(passwordReducer, {value: "",isValid: null});
@@ -109,9 +110,11 @@ const Login = (props) =>
     dispatchPassword({ type: "BLUR" });
   };
 
+  const ctx = useContext(AuthContext)
+
   const submitHandler = (event) => {
     event.preventDefault();
-    props.onLogin(email.value, password.value);
+    ctx.onLogin(email.value, password.value);
   };
 
   return (
