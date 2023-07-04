@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect, useState, useContext } from "react";
+import { useReducer, useEffect, useState, useContext, useRef } from "react";
 
 import Card from "../UI/Card/Card";
 import classes from "./Login.module.css";
@@ -6,20 +6,20 @@ import Button from "../UI/Button/Button";
 import Input from "../UI/Input/Input";
 import AuthContext from "../../store/auth-context";
 
-const emailReducer = (emailState, action) => {
+const emailReducer = (state, action) => {
   if (action.type === "INPUT") {
-    return { value: action.val, isValid: action.val.includes("@") }; // emailState is the current email state and has been set as an object having 2 items -> value and isValid. In this if statement, these items are populated and returned to email variable and to emailState.
+    return { value: action.val, isValid: true }; // emailState is the current email state and has been set as an object having 2 items -> value and isValid. In this if statement, these items are populated and returned to email variable and to emailState.
   } else if (action.type === "BLUR") {
-    return { value: emailState.value, isValid: emailState.isValid }; // when we are typing in input field, dispatchEmail func triggers emailReducer func on every key stroke. Then emailReducer updates the emailState accordingly. Then when we click outside input, emailReducer func is called by dispatcher and React puts the latest state of email to its parameter emailState and else if is triggered which doesn't update state just returns the current one.
+    return { value: state.value, isValid: state.value.includes("@") }; // when we are typing in input field, dispatchEmail func triggers emailReducer func on every key stroke. Then emailReducer updates the emailState accordingly. Then when we click outside input, emailReducer func is called by dispatcher and React puts the latest state of email to its parameter emailState and else if is triggered.
   }
   return { value: "", isValid: false };
 };
 
 const passwordReducer = (state, action) => {
   if (action.type === "INPUT") {
-    return { value: action.val, isValid: action.val.length > 6 };
+    return { value: action.val, isValid: true };
   } else if (action.type === "BLUR") {
-    return { value: state.value, isValid: state.isValid };
+    return { value: state.value, isValid: state.value.length > 6  };
   }
   return { value: "", isValid: false };
 };
@@ -119,29 +119,41 @@ const Login = () => {
   };
 
   const ctx = useContext(AuthContext)
-
+  const emailRef = useRef()
+  const passRef = useRef()
+  
   const submitHandler = (event) => {
     event.preventDefault();
-    ctx.onLogin(email.value, password.value);
+    if(formIsValid === true){
+      ctx.onLogin(email.value, password.value);
+    } else if(email.isValid === false){
+      emailRef.current.activateFocus()
+    } else{
+      passRef.current.activateFocus()
+    }
   };
+
+  
 
   return (
     <Card className={classes.login}>
       <form onSubmit={submitHandler}>
         <Input
+          ref={emailRef}
           data={email}
           label="e-mail"
           onChange={emailChangeHandler}
           onBlur={emailBlurHandler}
         ></Input>
         <Input
+          ref={passRef}
           data={password}
           label="password"
           onChange={passwordChangeHandler}
           onBlur={passwordBlurHandler}
         ></Input>
         <div className={classes.actions}>
-          <Button type="submit" disabled={!formIsValid}>
+          <Button type="submit" >
             Login
           </Button>
         </div>
