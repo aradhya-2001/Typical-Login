@@ -3,6 +3,7 @@ import React, { useReducer, useEffect, useState, useContext } from "react";
 import Card from "../UI/Card/Card";
 import classes from "./Login.module.css";
 import Button from "../UI/Button/Button";
+import Input from "../UI/Input/Input";
 import AuthContext from "../../store/auth-context";
 
 const emailReducer = (emailState, action) => {
@@ -57,10 +58,15 @@ const passwordReducer = (state, action) => {
   };
 }; */
 
-const Login = () => 
-{
-  const [email, dispatchEmail] = useReducer(emailReducer, {value: "",isValid: null}); // the initial state's isValid is set to null coz if its set to false then on page load up field will be coloured red.
-  const [password, dispatchPassword] = useReducer(passwordReducer, {value: "",isValid: null});
+const Login = () => {
+  const [email, dispatchEmail] = useReducer(emailReducer, {
+    value: "",
+    isValid: null,
+  }); // the initial state's isValid is set to null coz if its set to false then on page load up field will be coloured red.
+  const [password, dispatchPassword] = useReducer(passwordReducer, {
+    value: "",
+    isValid: null,
+  });
   /* const [form, dispatchForm] = useReducer(formReducer, {
     email: { value: "", isValid: null },
     password: { value: "", isValid: null },
@@ -70,33 +76,35 @@ const Login = () =>
   const [emailIsValid, setEmailIsValid] = useState(); 
    const [password, setPassword] = useState('');
   const [passwordIsValid, setPasswordIsValid] = useState(); */
-   const [formIsValid, setFormIsValid] = useState(false); 
- 
+  const [formIsValid, setFormIsValid] = useState(false);
+
   useEffect(() => {
     const timer = setTimeout(() => {
-      console.log("checking validity")
-      setFormIsValid(
-        email.isValid && password.isValid
-      );  
+      console.log("checking validity");
+      setFormIsValid(email.isValid && password.isValid);
     }, 300);
-    
-    return (() => {  // This is a clean up func. It runs before the code inside useEffect func is executed except the 1st time i.e. when the app renders 1st time, only the setTimeout func will run but afterwards when either (or both) of the dependencies changes, 1st the cleap up func runs then setTimeout func. This is coz after every key stroke, a new setTimeout func is added to the callback queue. But clean up func before adding a new setTimeout func to the callback queue, dels the prev one. Clean up func also runs whenever the component it is defined in is unmounted from the DOM like when we click on login button, Login component is removed from DOM so clean up func runs. 
-      console.log("clean up!")
-      clearTimeout(timer)
-    })
-  }, [email.isValid, password.isValid]) /* earlier this was running for every key strokes. After the form is valid we dont need to check further */
+
+    return () => {
+      // This is a clean up func. It runs before the code inside useEffect func is executed except the 1st time i.e. when the app renders 1st time, only the setTimeout func will run but afterwards when either (or both) of the dependencies changes, 1st the cleap up func runs then setTimeout func. This is coz after every key stroke, a new setTimeout func is added to the callback queue. But clean up func before adding a new setTimeout func to the callback queue, dels the prev one. Clean up func also runs whenever the component it is defined in is unmounted from the DOM like when we click on login button, Login component is removed from DOM so clean up func runs.
+      console.log("clean up!");
+      clearTimeout(timer);
+    };
+  }, [
+    email.isValid,
+    password.isValid,
+  ]); /* earlier this was running for every key strokes. After the form is valid we dont need to check further */
 
   const emailChangeHandler = (event) => {
-     dispatchEmail({type: "INPUT", val: event.target.value}); // Here we are sending the action onject {type: "USER_INPUT", val: event.target.value} to emailReducer func. 
-   /* setFormIsValid(
+    dispatchEmail({ type: "INPUT", val: event.target.value }); // Here we are sending the action onject {type: "USER_INPUT", val: event.target.value} to emailReducer func.
+    /* setFormIsValid(
       email.isValid && password.isValid 
     ); */
-   /*  dispatchForm({ type: "EMAIL_INPUT", val: event.target.value }); // Here we are sending the action onject {type: "USER_INPUT", val: event.target.value} to emailReducer func.*/
-  }; 
+    /*  dispatchForm({ type: "EMAIL_INPUT", val: event.target.value }); // Here we are sending the action onject {type: "USER_INPUT", val: event.target.value} to emailReducer func.*/
+  };
 
   const passwordChangeHandler = (event) => {
-     dispatchPassword({type: "INPUT", val: event.target.value});
-   /* setFormIsValid(
+    dispatchPassword({ type: "INPUT", val: event.target.value });
+    /* setFormIsValid(
      password.isValid && email.isValid
     ); */
     /* dispatchForm({ type: "PASSWORD_INPUT", val: event.target.value }); */
@@ -120,42 +128,25 @@ const Login = () =>
   return (
     <Card className={classes.login}>
       <form onSubmit={submitHandler}>
-        <div
-          className={`${classes.control} ${
-            email.isValid === false ? classes.invalid : ""
-          }`}
-        >
-          <label htmlFor="email">E-Mail</label>
-          <input
-            type="email"
-            id="email"
-            value={email.value}
-            onChange={emailChangeHandler}
-            onBlur={emailBlurHandler}
-          />
-        </div>
-        <div
-          className={`${classes.control} ${
-            password.isValid === false ? classes.invalid : ""
-          }`}
-        >
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            value={password.value}
-            onChange={passwordChangeHandler}
-            onBlur={passwordBlurHandler} // when we click somewhere out of the input field, validatePswordHandler func will run
-          />
-        </div>
+        <Input
+          data={email}
+          label="e-mail"
+          onChange={emailChangeHandler}
+          onBlur={emailBlurHandler}
+        ></Input>
+        <Input
+          data={password}
+          label="password"
+          onChange={passwordChangeHandler}
+          onBlur={passwordBlurHandler}
+        ></Input>
         <div className={classes.actions}>
-          <Button type="submit" className={classes.btn} disabled={!formIsValid}>
+          <Button type="submit" disabled={!formIsValid}>
             Login
           </Button>
         </div>
       </form>
     </Card>
   );
-  
-} 
+};
 export default Login;
